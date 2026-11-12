@@ -147,9 +147,9 @@
   #hour-colors.on { opacity: 1; }
   .hour-color-line { stroke-width: 3; stroke-linecap: round; }
 
-  #hour-sectors { opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
-  #hour-sectors.on { opacity: 0.55; }
-  .hour-sector { stroke: none; }
+  #hour-sectors { pointer-events: none; }
+  .hour-sector { stroke: none; opacity: 0; transition: opacity 0.3s ease; }
+  #hour-sectors.on .hour-sector { opacity: 0.55; }
 
   .number {
     paint-order: stroke;
@@ -286,6 +286,147 @@
     line-height: 1;
   }
 
+  /* Lesson mode: blink/highlight animations */
+  @keyframes hl-hand-blink {
+    0%, 100% { filter: drop-shadow(0 0 0 transparent); opacity: 1; }
+    50% { filter: drop-shadow(0 0 14px #ffeb3b) drop-shadow(0 0 22px #fff176); opacity: 0.45; }
+  }
+  .hl-hand { animation: hl-hand-blink 0.55s ease-in-out infinite; }
+
+  @keyframes hl-sector-blink {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.95; }
+  }
+  .hour-sector.hl-sector { animation: hl-sector-blink 0.55s ease-in-out infinite; }
+
+  @keyframes hl-number-blink {
+    0%, 100% { fill: #1a1a1a; }
+    50% { fill: #ff3d00; }
+  }
+  .hl-number { animation: hl-number-blink 0.55s ease-in-out infinite; }
+
+  @keyframes hl-tick-blink {
+    0%, 100% { stroke: #555; stroke-width: 1.5; }
+    50% { stroke: #ff3d00; stroke-width: 4; }
+  }
+  .tick-minute.hl-tick { animation: hl-tick-blink 0.55s ease-in-out infinite; }
+  @keyframes hl-tick-hour-blink {
+    0%, 100% { stroke: #1a1a1a; stroke-width: 4; }
+    50% { stroke: #ff3d00; stroke-width: 6; }
+  }
+  .tick-hour.hl-tick { animation: hl-tick-hour-blink 0.55s ease-in-out infinite; }
+
+  @keyframes clock-flash-anim {
+    0%, 100% { filter: drop-shadow(0 10px 30px rgba(0,0,0,0.25)) brightness(1); }
+    50% { filter: drop-shadow(0 0 40px rgba(255,255,180,0.9)) brightness(1.5); }
+  }
+  #clock-svg.flashing { animation: clock-flash-anim 0.55s ease-in-out 3; }
+
+  /* Learn button + menu (bottom-right) */
+  #learn-controls {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 15;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  #btn-learn {
+    background: linear-gradient(135deg, #ff6b9d, #c44569);
+    color: #fff;
+    border: 2px solid #fff;
+    font-weight: 800;
+    font-size: 16px;
+    padding: 12px 20px;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    white-space: nowrap;
+  }
+  #btn-learn:hover { filter: brightness(1.1); }
+  #learn-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.25s ease;
+    pointer-events: none;
+  }
+  #learn-controls.open #learn-menu {
+    max-height: 500px;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .learn-item {
+    background: rgba(255,255,255,0.95);
+    border: 2px solid #c44569;
+    color: #333;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    white-space: nowrap;
+    text-align: left;
+  }
+  .learn-item:hover { background: #ffe0ec; }
+
+  /* Lesson player (active during lesson) */
+  #lesson-player {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 16;
+    background: rgba(0,0,0,0.78);
+    color: #fff;
+    padding: 14px 18px;
+    border-radius: 16px;
+    width: min(620px, 92vw);
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  }
+  #lesson-player.active { display: flex; }
+  #lesson-title {
+    font-size: 13px;
+    opacity: 0.75;
+    text-align: center;
+  }
+  #lesson-text {
+    font-size: clamp(15px, 2.3vw, 20px);
+    text-align: center;
+    line-height: 1.45;
+    min-height: 2.6em;
+    font-weight: 600;
+  }
+  #lesson-controls {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .lesson-btn {
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .lesson-btn:hover { background: rgba(255,255,255,0.3); }
+  .lesson-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
   @media (max-width: 1235px) {
     #controls {
       flex-direction: column;
@@ -364,6 +505,29 @@
 
   <div id="hint">긴 바늘(파란 바늘)을 잡고 돌려 보세요</div>
 
+  <div id="learn-controls">
+    <div id="learn-menu">
+      <button class="learn-item" data-lesson="basics">1. 기본 개념 소개</button>
+      <button class="learn-item" data-lesson="hours">2. 시 배우기</button>
+      <button class="learn-item" data-lesson="minutes">3. 분 배우기</button>
+      <button class="learn-item" data-lesson="combined">4. 실전 시계 읽기</button>
+      <button class="learn-item" data-lesson="ampm">5. 오전과 오후</button>
+      <button class="learn-item" data-lesson="tricky">6. 이럴 땐 몇 시?</button>
+    </div>
+    <button id="btn-learn">📚 학습</button>
+  </div>
+
+  <div id="lesson-player">
+    <div id="lesson-title"></div>
+    <div id="lesson-text"></div>
+    <div id="lesson-controls">
+      <button class="lesson-btn" id="lesson-prev">◀</button>
+      <button class="lesson-btn" id="lesson-pause">⏸</button>
+      <button class="lesson-btn" id="lesson-next">▶</button>
+      <button class="lesson-btn" id="lesson-close">✕</button>
+    </div>
+  </div>
+
 <script>
 (function() {
   "use strict";
@@ -375,7 +539,7 @@
   let autoPlay = false;
   let autoPlayStart = 0;
   let autoPlayStartMinutes = 0;
-  let lang = "en"; // "ko" or "en" — default English
+  let lang = "ko"; // "ko" or "en" — default Korean
   let colorsOn = false;
   let menuOpen = false;
 
@@ -489,6 +653,7 @@
     line.setAttribute("x2", x2);
     line.setAttribute("y2", y2);
     line.setAttribute("class", i % 5 === 0 ? "tick-hour" : "tick-minute");
+    line.setAttribute("id", "tick-" + i);
     ticksG.appendChild(line);
   }
 
@@ -502,6 +667,7 @@
     t.setAttribute("x", x);
     t.setAttribute("y", y);
     t.setAttribute("class", "number");
+    t.setAttribute("id", "num-" + h);
     t.setAttribute("font-size", "34");
     t.textContent = String(h);
     numbersG.appendChild(t);
@@ -540,6 +706,8 @@
     path.setAttribute("d", d);
     path.setAttribute("class", "hour-sector");
     path.setAttribute("fill", HOUR_COLORS[h]);
+    const hourLabel = h === 0 ? 12 : h;
+    path.setAttribute("id", "sector-" + hourLabel);
     hourSectorsG.appendChild(path);
   }
 
@@ -923,6 +1091,720 @@
   setTimeout(function() {
     hintEl.classList.add("hidden");
   }, 10000);
+
+  // ============================================================
+  // LESSON MODE
+  // ============================================================
+
+  const LESSON_UI = {
+    ko: {
+      learn: "📚 학습",
+      titles: {
+        basics: "1. 기본 개념 소개",
+        hours: "2. 시 배우기",
+        minutes: "3. 분 배우기",
+        combined: "4. 실전 시계 읽기",
+        ampm: "5. 오전과 오후",
+        tricky: "6. 이럴 땐 몇 시?"
+      },
+      items: {
+        basics: "1. 기본 개념 소개",
+        hours: "2. 시 배우기",
+        minutes: "3. 분 배우기",
+        combined: "4. 실전 시계 읽기",
+        ampm: "5. 오전과 오후",
+        tricky: "6. 이럴 땐 몇 시?"
+      },
+      pause: "⏸",
+      resume: "▶"
+    },
+    en: {
+      learn: "📚 Learn",
+      titles: {
+        basics: "1. Basic Concepts",
+        hours: "2. Learning Hours",
+        minutes: "3. Learning Minutes",
+        combined: "4. Reading the Clock",
+        ampm: "5. AM and PM",
+        tricky: "6. Tricky Times"
+      },
+      items: {
+        basics: "1. Basic Concepts",
+        hours: "2. Learning Hours",
+        minutes: "3. Learning Minutes",
+        combined: "4. Reading the Clock",
+        ampm: "5. AM and PM",
+        tricky: "6. Tricky Times"
+      },
+      pause: "⏸",
+      resume: "▶"
+    }
+  };
+
+  const KO_HOUR_NATIVE = ["", "한", "두", "세", "네", "다섯", "여섯", "일곱", "여덟", "아홉", "열", "열한", "열두"];
+  const KO_MIN_ONES = ["", "일", "이", "삼", "사", "오", "육", "칠", "팔", "구"];
+  const KO_MIN_TENS = ["", "십", "이십", "삼십", "사십", "오십"];
+
+  function koMinutes(n) {
+    if (n === 0) return "영";
+    if (n < 10) return KO_MIN_ONES[n];
+    const t = Math.floor(n / 10), o = n % 10;
+    if (o === 0) return KO_MIN_TENS[t];
+    return KO_MIN_TENS[t] + KO_MIN_ONES[o];
+  }
+
+  function koSpeakify(text) {
+    text = text.replace(/(\d+)분/g, function(_, n) {
+      return koMinutes(parseInt(n, 10)) + " 분";
+    });
+    text = text.replace(/10시/g, "열 시");
+    text = text.replace(/11시/g, "열한 시");
+    text = text.replace(/12시/g, "열두 시");
+    text = text.replace(/([^0-9]|^)([1-9])시/g, function(_, pre, n) {
+      return pre + KO_HOUR_NATIVE[parseInt(n, 10)] + " 시";
+    });
+    text = text.replace(/24시간/g, "이십사 시간");
+    text = text.replace(/12(?!\d)/g, "십이");
+    return text;
+  }
+
+  function buildLessons(L) {
+    const lessons = {};
+
+    // --- Lesson 1: basics ---
+    if (L === "ko") {
+      lessons.basics = [
+        { say: "시간에는 시와 분 그리고 초가 있어요." },
+        { say: "짧은 바늘의 이름은 시침이에요.", highlight: ["hour-hand"] },
+        { say: "긴 바늘의 이름은 분침이에요.", highlight: ["minute-hand"] },
+        { say: "짧은 바늘은 시간에서 시를 말하는 거예요.", highlight: ["hour-hand"] },
+        { say: "긴 바늘은 시간에서 분을 말하는 거예요.", highlight: ["minute-hand"] }
+      ];
+    } else {
+      lessons.basics = [
+        { say: "Time has hours, minutes, and seconds." },
+        { say: "The short hand is called the hour hand.", highlight: ["hour-hand"] },
+        { say: "The long hand is called the minute hand.", highlight: ["minute-hand"] },
+        { say: "The short hand tells us the hour.", highlight: ["hour-hand"] },
+        { say: "The long hand tells us the minutes.", highlight: ["minute-hand"] }
+      ];
+    }
+
+    // --- Lesson 2: hours ---
+    lessons.hours = [];
+    if (L === "ko") {
+      lessons.hours.push({
+        say: "시계의 짧은 바늘에 대해 배워봐요. 짧은 바늘은 시간에서 시를 말해요.",
+        highlight: ["hour-hand"],
+        setTime: 12 * 60,
+        minuteHandDeg: 0
+      });
+    } else {
+      lessons.hours.push({
+        say: "Let's learn about the short hand on the clock. The short hand tells us the hour.",
+        highlight: ["hour-hand"],
+        setTime: 12 * 60,
+        minuteHandDeg: 0
+      });
+    }
+    const hourOrder = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    for (let i = 0; i < hourOrder.length; i++) {
+      const hourLabel = hourOrder[i];
+      const nextLabel = hourLabel === 12 ? 1 : (hourLabel === 11 ? 12 : hourLabel + 1);
+      const tm = (hourLabel === 12 ? 12 : hourLabel + 12) * 60;
+      if (L === "ko") {
+        lessons.hours.push({
+          say: "짧은 바늘이 숫자 " + hourLabel + "과 " + nextLabel + " 사이에 있을 때는 " + hourLabel + "시라고 말해요.",
+          highlight: ["hour-hand", "sector-" + hourLabel, "num-" + hourLabel, "num-" + nextLabel],
+          setTime: tm
+        });
+      } else {
+        lessons.hours.push({
+          say: "When the short hand is between " + hourLabel + " and " + nextLabel + ", we say " + hourLabel + " o'clock.",
+          highlight: ["hour-hand", "sector-" + hourLabel, "num-" + hourLabel, "num-" + nextLabel],
+          setTime: tm
+        });
+      }
+    }
+
+    // --- Lesson 3: minutes ---
+    lessons.minutes = [];
+    if (L === "ko") {
+      lessons.minutes.push({
+        say: "시계의 긴 바늘에 대해 배워봐요.",
+        highlight: ["minute-hand"],
+        setTime: 12 * 60
+      });
+      lessons.minutes.push({ say: "긴 바늘은 시간에서 분을 말해요.", highlight: ["minute-hand"] });
+    } else {
+      lessons.minutes.push({
+        say: "Let's learn about the long hand on the clock.",
+        highlight: ["minute-hand"],
+        setTime: 12 * 60
+      });
+      lessons.minutes.push({ say: "The long hand tells us the minutes.", highlight: ["minute-hand"] });
+    }
+    for (let h = 1; h <= 11; h++) {
+      const mm = h * 5;
+      const tm = 12 * 60 + mm;
+      if (L === "ko") {
+        lessons.minutes.push({
+          say: "긴 바늘이 숫자 " + h + "에 있을 때는 " + mm + "분이라고 말해요.",
+          highlight: ["minute-hand", "num-" + h],
+          setTime: tm
+        });
+      } else {
+        lessons.minutes.push({
+          say: "When the long hand points to " + h + ", we say " + mm + " minutes.",
+          highlight: ["minute-hand", "num-" + h],
+          setTime: tm
+        });
+      }
+    }
+    if (L === "ko") {
+      lessons.minutes.push({
+        say: "긴 바늘이 숫자 12에 있을 때는, 짧은 바늘의 숫자만 말해서 12시라고 말해요.",
+        highlight: ["minute-hand", "num-12"],
+        setTime: 12 * 60
+      });
+      lessons.minutes.push({
+        say: "그리고 숫자 사이사이에는 작은 점들이 4개씩 있어요.",
+        highlight: ["tick-1", "tick-2", "tick-3", "tick-4"],
+        setTime: 12 * 60
+      });
+      lessons.minutes.push({
+        say: "점에는 숫자가 보이지 않지만, 숫자 12 바로 오른쪽에 있는 점부터 1분이에요.",
+        highlight: ["tick-1", "minute-hand"],
+        setTime: 12 * 60 + 1
+      });
+      lessons.minutes.push({
+        say: "그렇게 1분, 2분, 3분, 4분 수를 세다 보면, 숫자 1이 5분이 되는 거예요.",
+        highlight: ["num-1"],
+        setTime: 12 * 60 + 5
+      });
+      lessons.minutes.push({ say: "그럼 1분부터 59분까지 함께 세어 볼까요?" });
+    } else {
+      lessons.minutes.push({
+        say: "When the long hand points to 12, we only say the hour, so we say 12 o'clock.",
+        highlight: ["minute-hand", "num-12"],
+        setTime: 12 * 60
+      });
+      lessons.minutes.push({
+        say: "Between each number, there are four small dots.",
+        highlight: ["tick-1", "tick-2", "tick-3", "tick-4"],
+        setTime: 12 * 60
+      });
+      lessons.minutes.push({
+        say: "The dots have no numbers, but the first dot to the right of 12 is 1 minute.",
+        highlight: ["tick-1", "minute-hand"],
+        setTime: 12 * 60 + 1
+      });
+      lessons.minutes.push({
+        say: "So 1, 2, 3, 4 minutes, and then number 1 becomes 5 minutes.",
+        highlight: ["num-1"],
+        setTime: 12 * 60 + 5
+      });
+      lessons.minutes.push({ say: "Now let's count from 1 to 59 minutes together!" });
+    }
+    for (let m = 1; m <= 59; m++) {
+      const highlights = ["minute-hand", "tick-" + m];
+      if (m % 5 === 0) highlights.push("num-" + (m / 5));
+      lessons.minutes.push({
+        say: (L === "ko" ? m + "분" : m + (m === 1 ? " minute" : " minutes")),
+        highlight: highlights,
+        setTime: 12 * 60 + m,
+        wait: 150
+      });
+    }
+
+    // --- Lesson 4: combined reading ---
+    lessons.combined = [];
+    if (L === "ko") {
+      lessons.combined.push({ say: "그러면 이제 시계를 읽어봐요.", setTime: 1 * 60 });
+    } else {
+      lessons.combined.push({ say: "Now let's read the clock together.", setTime: 1 * 60 });
+    }
+    for (let m = 1; m <= 11; m++) {
+      const mm = m * 5;
+      const tm = 1 * 60 + mm;
+      if (L === "ko") {
+        lessons.combined.push({
+          say: "1시 " + mm + "분",
+          highlight: ["hour-hand", "minute-hand", "num-" + m],
+          setTime: tm
+        });
+      } else {
+        lessons.combined.push({
+          say: "1 " + mm,
+          highlight: ["hour-hand", "minute-hand", "num-" + m],
+          setTime: tm
+        });
+      }
+    }
+    if (L === "ko") {
+      lessons.combined.push({
+        say: "짧은 바늘이 숫자 2에 있고, 긴 바늘이 숫자 12에 있으면 2시라고 말해요.",
+        highlight: ["hour-hand", "minute-hand", "num-2", "num-12"],
+        setTime: 2 * 60
+      });
+    } else {
+      lessons.combined.push({
+        say: "When the short hand is on 2 and the long hand is on 12, we say 2 o'clock.",
+        highlight: ["hour-hand", "minute-hand", "num-2", "num-12"],
+        setTime: 2 * 60
+      });
+    }
+    for (let m = 6; m <= 9; m++) {
+      const tm = 2 * 60 + m;
+      if (L === "ko") {
+        lessons.combined.push({
+          say: "짧은 바늘이 숫자 2와 3 사이에 있고, 긴 바늘이 숫자 1 다음 점을 가리키면 2시 " + m + "분이에요.",
+          highlight: ["hour-hand", "minute-hand", "tick-" + m, "sector-2"],
+          setTime: tm
+        });
+      } else {
+        lessons.combined.push({
+          say: "When the short hand is between 2 and 3, and the long hand is on a dot after 1, it is 2 " + m + ".",
+          highlight: ["hour-hand", "minute-hand", "tick-" + m, "sector-2"],
+          setTime: tm
+        });
+      }
+    }
+    if (L === "ko") {
+      lessons.combined.push({
+        say: "짧은 바늘이 숫자 2와 3 사이에 있고, 긴 바늘이 숫자 2를 가리키면 2시 10분이라고 말해요.",
+        highlight: ["hour-hand", "minute-hand", "num-2", "sector-2"],
+        setTime: 2 * 60 + 10
+      });
+    } else {
+      lessons.combined.push({
+        say: "When the short hand is between 2 and 3, and the long hand is on 2, we say 2 10.",
+        highlight: ["hour-hand", "minute-hand", "num-2", "sector-2"],
+        setTime: 2 * 60 + 10
+      });
+    }
+
+    // --- Lesson 5: AM/PM ---
+    if (L === "ko") {
+      lessons.ampm = [
+        { say: "하루는 24시간이라고 해요." },
+        { say: "시계에는 숫자 12까지밖에 없는데 어떻게 24시간일까요?" },
+        { say: "짧은 바늘이 시계를 두 바퀴 돌면 그게 하루예요.", action: "rotateHour2", setTime: 12 * 60 },
+        { say: "하루는 크게 오전과 오후가 있어요. 작게는 아침, 점심, 저녁, 밤이라고 불러요." },
+        { say: "우리 모두 아침에 일어나서 하루를 시작하죠? 해님이 떠오른 그 시간을 우리는 아침이라고 불러요.", setTime: 7 * 60 },
+        { say: "해님이 하늘 가장 높은 곳에 올라오면 점심시간이에요.", setTime: 12 * 60 },
+        { say: "해님이 서쪽으로 지기 시작하면 저녁이에요.", setTime: 18 * 60 },
+        { say: "달이 뜨고 어두워지면 밤이에요.", setTime: 22 * 60 },
+        { say: "우리가 잠들고 나서, 밤 12시부터 점심 12시까지를 오전이라고 불러요.", setTime: 3 * 60 },
+        { say: "그리고 점심 12시부터 밤 12시까지를 오후라고 불러요.", setTime: 15 * 60 },
+        { say: "이렇게 해서 하루는 24시간이에요. 같은 이름의 시간이 하루에 두 번씩 있어요. 아침 7시, 그리고 오후 7시.", setTime: 7 * 60 },
+        { say: "오후 7시는 이렇게 생겼어요.", setTime: 19 * 60 },
+        { say: "시간의 이름을 더 세부적으로 나눌 수도 있어요. 하지만 우리는 아직 그 시간을 배우지는 않아요." }
+      ];
+    } else {
+      lessons.ampm = [
+        { say: "A day has 24 hours." },
+        { say: "The clock only has numbers up to 12, so how can a day be 24 hours?" },
+        { say: "When the short hand goes around the clock twice, that is one full day.", action: "rotateHour2", setTime: 12 * 60 },
+        { say: "A day has morning, noon, evening, and night." },
+        { say: "We wake up in the morning to start our day. When the sun rises, we call it morning.", setTime: 7 * 60 },
+        { say: "When the sun is highest in the sky, it is noon.", setTime: 12 * 60 },
+        { say: "When the sun sets in the west, it is evening.", setTime: 18 * 60 },
+        { say: "When the moon rises and it gets dark, it is night.", setTime: 22 * 60 },
+        { say: "From midnight to noon is called A.M.", setTime: 3 * 60 },
+        { say: "From noon to midnight is called P.M.", setTime: 15 * 60 },
+        { say: "So a day is 24 hours. The same time name happens twice a day. 7 A.M. and 7 P.M.", setTime: 7 * 60 },
+        { say: "This is 7 P.M.", setTime: 19 * 60 },
+        { say: "There are more detailed names for times, but we will learn those later." }
+      ];
+    }
+
+    // --- Lesson 6: tricky (why 1:55 is not 2:55) ---
+    if (L === "ko") {
+      lessons.tricky = [
+        {
+          say: "이럴 땐 몇 시일까요? 긴 바늘이 12 근처에 있을 때 헷갈리지 않는 세 가지 비밀을 알려줄게요!",
+          highlight: ["hour-hand", "minute-hand"],
+          setTime: 1 * 60 + 55
+        },
+        {
+          say: "첫 번째 비밀! 아직 12라는 문을 넘지 못했어요. 짧은 바늘이 2에 아주 가까워 보이지만, 긴 바늘이 맨 위의 숫자 12라는 문을 완전히 띡 하고 통과해야 비로소 진짜 2시가 되는 거랍니다.",
+          highlight: ["num-12", "minute-hand"],
+          setTime: 1 * 60 + 55
+        },
+        {
+          say: "긴 바늘이 12를 띡 하고 넘어가는 모습을 보여줄게요.",
+          action: "crossTwelve"
+        },
+        {
+          say: "그래서 지금은 아직 2시가 되기 전인 1시예요!",
+          highlight: ["num-1", "hour-hand"],
+          setTime: 1 * 60 + 55
+        },
+        {
+          say: "두 번째 비밀! 1시에서 출발한 짧은 바늘이 2시 집을 향해 걸어가고 있어요. 55분이라는 건 2시 집 목적지에 거의 다 도착하긴 했지만, 아직 집 문 앞 골목길에 있는 상태예요. 그래서 아직은 1시 집의 영역에 있는 거랍니다!",
+          highlight: ["sector-1", "hour-hand", "num-1", "num-2"],
+          setTime: 1 * 60 + 55
+        },
+        {
+          say: "세 번째 비밀! 시계를 볼 땐 긴 바늘을 먼저 찾아보세요! 긴 바늘이 시계의 왼쪽 동네에 가 있으면, 짧은 바늘이 가리키는 숫자보다 바로 전 숫자를 읽어야 해요. 긴 바늘이 12에 거의 다 왔지만 짧은 바늘은 아직 2시가 안 된 1시 55분이랍니다!",
+          highlight: ["sector-6", "sector-7", "sector-8", "sector-9", "sector-10", "sector-11", "minute-hand", "hour-hand", "num-1"],
+          setTime: 1 * 60 + 55
+        },
+        {
+          say: "이제 긴 바늘이 12 근처에 있어도 헷갈리지 않겠죠? 참 잘했어요!",
+          action: "flashClock",
+          setTime: 1 * 60 + 55
+        }
+      ];
+    } else {
+      lessons.tricky = [
+        {
+          say: "What time is it in these tricky cases? Let me tell you three secrets so you don't get confused when the long hand is near 12!",
+          highlight: ["hour-hand", "minute-hand"],
+          setTime: 1 * 60 + 55
+        },
+        {
+          say: "First secret! The long hand hasn't passed through the 12 gate yet. The short hand looks very close to 2, but the long hand has to tick completely past the number 12 gate at the top for it to really become 2 o'clock.",
+          highlight: ["num-12", "minute-hand"],
+          setTime: 1 * 60 + 55
+        },
+        {
+          say: "Let's watch the long hand tick past 12.",
+          action: "crossTwelve"
+        },
+        {
+          say: "So right now it's still 1, before 2!",
+          highlight: ["num-1", "hour-hand"],
+          setTime: 1 * 60 + 55
+        },
+        {
+          say: "Second secret! The short hand that started at 1 is walking toward house 2. 55 minutes means it has almost reached house 2, but it is still in the alley in front of the door. So it is still in the territory of house 1!",
+          highlight: ["sector-1", "hour-hand", "num-1", "num-2"],
+          setTime: 1 * 60 + 55
+        },
+        {
+          say: "Third secret! When you look at the clock, find the long hand first! If the long hand is on the left side of the clock, you should read the number right before the one the short hand is pointing to. The long hand is almost at 12, but the short hand hasn't reached 2 yet, so it's 1:55!",
+          highlight: ["sector-6", "sector-7", "sector-8", "sector-9", "sector-10", "sector-11", "minute-hand", "hour-hand", "num-1"],
+          setTime: 1 * 60 + 55
+        },
+        {
+          say: "Now you won't be confused even when the long hand is near 12. Great job!",
+          action: "flashClock",
+          setTime: 1 * 60 + 55
+        }
+      ];
+    }
+
+    return lessons;
+  }
+
+  // Lesson runner state
+  let lessonSteps = null;
+  let lessonIdx = 0;
+  let lessonPlaying = false;
+  let lessonPaused = false;
+  let lessonBusy = false;
+  let currentUtteranceId = null;
+  let pendingTimeout = null;
+  let activeAction = null;
+
+  const learnControls = document.getElementById("learn-controls");
+  const btnLearn = document.getElementById("btn-learn");
+  const learnMenu = document.getElementById("learn-menu");
+  const lessonPlayer = document.getElementById("lesson-player");
+  const lessonTitleEl = document.getElementById("lesson-title");
+  const lessonTextEl = document.getElementById("lesson-text");
+  const lessonBtnPrev = document.getElementById("lesson-prev");
+  const lessonBtnPause = document.getElementById("lesson-pause");
+  const lessonBtnNext = document.getElementById("lesson-next");
+  const lessonBtnClose = document.getElementById("lesson-close");
+
+  function updateLearnButtonLabels() {
+    btnLearn.textContent = LESSON_UI[lang].learn;
+    document.querySelectorAll(".learn-item").forEach(function(btn) {
+      const key = btn.getAttribute("data-lesson");
+      btn.textContent = LESSON_UI[lang].items[key];
+    });
+  }
+
+  btnLearn.addEventListener("click", function() {
+    learnControls.classList.toggle("open");
+  });
+
+  document.querySelectorAll(".learn-item").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      const key = btn.getAttribute("data-lesson");
+      learnControls.classList.remove("open");
+      startLesson(key);
+    });
+  });
+
+  function clearHighlights() {
+    document.querySelectorAll(".hl-hand, .hl-sector, .hl-number, .hl-tick").forEach(function(el) {
+      el.classList.remove("hl-hand", "hl-sector", "hl-number", "hl-tick");
+    });
+  }
+
+  function applyHighlights(ids) {
+    if (!ids) return;
+    const list = Array.isArray(ids) ? ids : [ids];
+    list.forEach(function(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (id === "hour-hand" || id === "minute-hand") {
+        el.classList.add("hl-hand");
+      } else if (id.startsWith("num-")) {
+        el.classList.add("hl-number");
+      } else if (id.startsWith("sector-")) {
+        el.classList.add("hl-sector");
+      } else if (id.startsWith("tick-")) {
+        el.classList.add("hl-tick");
+      }
+    });
+  }
+
+  function cancelSpeech() {
+    currentUtteranceId = null;
+    window.__onTtsDone = null;
+    if (window.AndroidTTS && typeof window.AndroidTTS.stop === "function") {
+      try { window.AndroidTTS.stop(); } catch (e) {}
+    }
+    if (window.speechSynthesis) {
+      try { window.speechSynthesis.cancel(); } catch (e) {}
+    }
+    if (pendingTimeout) {
+      clearTimeout(pendingTimeout);
+      pendingTimeout = null;
+    }
+  }
+
+  function speakAndWait(text, onDone) {
+    currentUtteranceId = "utt_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+    const myId = currentUtteranceId;
+    const spokenText = (lang === "ko") ? koSpeakify(text) : text;
+
+    const finish = function() {
+      if (myId !== currentUtteranceId) return;
+      window.__onTtsDone = null;
+      onDone();
+    };
+
+    const androidOk = window.AndroidTTS && typeof window.AndroidTTS.isAvailable === "function" && window.AndroidTTS.isAvailable();
+    if (androidOk) {
+      window.__onTtsDone = function(id) {
+        if (id === myId) finish();
+      };
+      try {
+        window.AndroidTTS.speak(spokenText, lang, myId);
+        return;
+      } catch (e) {}
+    }
+
+    if (window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
+        const utt = new SpeechSynthesisUtterance(spokenText);
+        utt.lang = lang === "ko" ? "ko-KR" : "en-US";
+        utt.rate = 0.95;
+        utt.pitch = 1.05;
+        utt.onend = finish;
+        utt.onerror = finish;
+        window.speechSynthesis.speak(utt);
+        return;
+      } catch (e) {}
+    }
+
+    pendingTimeout = setTimeout(finish, Math.max(1200, spokenText.length * 85));
+  }
+
+  function animateCrossTwelve(onDone) {
+    const startT = performance.now();
+    const duration = 2200;
+    const fromTm = 1 * 60 + 55;
+    const toTm = 2 * 60 + 2;
+    totalMinutes = fromTm;
+    update();
+    activeAction = "cross";
+    function frame(now) {
+      if (!lessonPlaying || activeAction !== "cross") return;
+      const t = Math.min(1, (now - startT) / duration);
+      totalMinutes = fromTm + (toTm - fromTm) * t;
+      update();
+      // Keep num-12 blinking during the crossing
+      const n12 = document.getElementById("num-12");
+      if (n12 && !n12.classList.contains("hl-number")) n12.classList.add("hl-number");
+      if (t < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        activeAction = null;
+        onDone();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function animateHourRotation2(onDone) {
+    const startT = performance.now();
+    const duration = 4000;
+    const startM = totalMinutes;
+    activeAction = "rotate";
+    function frame(now) {
+      if (!lessonPlaying || activeAction !== "rotate") return;
+      const t = Math.min(1, (now - startT) / duration);
+      totalMinutes = startM + t * 1440;
+      update();
+      if (t < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        totalMinutes = startM;
+        update();
+        activeAction = null;
+        onDone();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function runStep() {
+    if (!lessonPlaying || !lessonSteps) return;
+    if (lessonIdx < 0) lessonIdx = 0;
+    if (lessonIdx >= lessonSteps.length) {
+      stopLesson();
+      return;
+    }
+    lessonBusy = true;
+    clearHighlights();
+    const step = lessonSteps[lessonIdx];
+    if (typeof step.setTime === "number") {
+      totalMinutes = step.setTime;
+      update();
+    }
+    if (typeof step.hourHandDeg === "number") {
+      hourHand.setAttribute("transform", "rotate(" + step.hourHandDeg + ")");
+    }
+    if (typeof step.minuteHandDeg === "number") {
+      minuteHand.setAttribute("transform", "rotate(" + step.minuteHandDeg + ")");
+      minuteHit.setAttribute("transform", "rotate(" + step.minuteHandDeg + ")");
+    }
+    applyHighlights(step.highlight);
+    lessonTextEl.textContent = step.say || "";
+
+    const afterSpeak = function() {
+      if (!lessonPlaying) return;
+      const extraWait = typeof step.wait === "number" ? step.wait : 350;
+      pendingTimeout = setTimeout(function() {
+        lessonBusy = false;
+        if (!lessonPlaying || lessonPaused) return;
+        lessonIdx++;
+        runStep();
+      }, extraWait);
+    };
+
+    if (step.action === "rotateHour2") {
+      animateHourRotation2(function() {
+        if (step.say) {
+          speakAndWait(step.say, afterSpeak);
+        } else {
+          afterSpeak();
+        }
+      });
+    } else if (step.action === "crossTwelve") {
+      if (step.say) {
+        speakAndWait(step.say, function() {
+          animateCrossTwelve(afterSpeak);
+        });
+      } else {
+        animateCrossTwelve(afterSpeak);
+      }
+    } else if (step.action === "flashClock") {
+      const svg = document.getElementById("clock-svg");
+      svg.classList.add("flashing");
+      setTimeout(function() { svg.classList.remove("flashing"); }, 1800);
+      if (step.say) {
+        speakAndWait(step.say, afterSpeak);
+      } else {
+        pendingTimeout = setTimeout(afterSpeak, 1800);
+      }
+    } else if (step.say) {
+      speakAndWait(step.say, afterSpeak);
+    } else {
+      pendingTimeout = setTimeout(afterSpeak, 500);
+    }
+  }
+
+  function startLesson(key) {
+    stopLesson();
+    const data = buildLessons(lang);
+    if (!data[key]) return;
+    autoPlay = false;
+    updateAutoPlayButton();
+    lessonSteps = data[key];
+    lessonIdx = 0;
+    lessonPlaying = true;
+    lessonPaused = false;
+    lessonTitleEl.textContent = LESSON_UI[lang].titles[key];
+    lessonPlayer.classList.add("active");
+    lessonBtnPause.textContent = LESSON_UI[lang].pause;
+    runStep();
+  }
+
+  function stopLesson() {
+    lessonPlaying = false;
+    lessonPaused = false;
+    lessonBusy = false;
+    activeAction = null;
+    cancelSpeech();
+    clearHighlights();
+    lessonSteps = null;
+    lessonIdx = 0;
+    lessonPlayer.classList.remove("active");
+    lessonTextEl.textContent = "";
+    lessonTitleEl.textContent = "";
+  }
+
+  lessonBtnPrev.addEventListener("click", function() {
+    if (!lessonPlaying) return;
+    cancelSpeech();
+    lessonIdx = Math.max(0, lessonIdx - 1);
+    lessonPaused = false;
+    lessonBtnPause.textContent = LESSON_UI[lang].pause;
+    runStep();
+  });
+
+  lessonBtnNext.addEventListener("click", function() {
+    if (!lessonPlaying) return;
+    cancelSpeech();
+    lessonIdx++;
+    lessonPaused = false;
+    lessonBtnPause.textContent = LESSON_UI[lang].pause;
+    runStep();
+  });
+
+  lessonBtnPause.addEventListener("click", function() {
+    if (!lessonPlaying) return;
+    if (lessonPaused) {
+      lessonPaused = false;
+      lessonBtnPause.textContent = LESSON_UI[lang].pause;
+      runStep();
+    } else {
+      lessonPaused = true;
+      lessonBtnPause.textContent = LESSON_UI[lang].resume;
+      cancelSpeech();
+    }
+  });
+
+  lessonBtnClose.addEventListener("click", stopLesson);
+
+  // Rebuild labels when language changes
+  const _origApplyLang = applyLang;
+  applyLang = function() {
+    _origApplyLang();
+    updateLearnButtonLabels();
+    if (lessonPlaying) stopLesson();
+  };
+
+  updateLearnButtonLabels();
 })();
 </script>
 </body>
