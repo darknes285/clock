@@ -256,13 +256,9 @@
     right: 12px;
     z-index: 12;
     display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     gap: 8px;
-    align-items: center;
-  }
-  #menu-items {
-    display: flex;
-    gap: 8px;
-    align-items: center;
   }
   .btn {
     background: rgba(255,255,255,0.9);
@@ -280,10 +276,90 @@
   .btn.active { background: #ffd86b; border-color: #8a6d2a; }
 
   #btn-menu {
-    display: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-size: 20px;
     padding: 6px 12px;
     line-height: 1;
+    order: 1;
+  }
+  #menu-items {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.35s ease, opacity 0.25s ease;
+    pointer-events: none;
+  }
+  #controls.open #menu-items {
+    max-height: 500px;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* About popup */
+  #about-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: rgba(0,0,0,0.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+    padding: 20px;
+  }
+  #about-overlay.active { display: flex; }
+  #about-card {
+    background: #fff;
+    color: #2c3e50;
+    padding: 34px 32px 28px;
+    border-radius: 22px;
+    max-width: 520px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+    position: relative;
+  }
+  #about-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 26px;
+    cursor: pointer;
+    color: #888;
+    line-height: 1;
+    padding: 4px 8px;
+  }
+  #about-close:hover { color: #333; }
+  #about-title {
+    font-size: 22px;
+    font-weight: 900;
+    text-align: center;
+    color: #c44569;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #f0f4ff;
+    padding-bottom: 14px;
+  }
+  #about-body p {
+    font-size: 15px;
+    line-height: 1.7;
+    margin: 10px 0;
+  }
+  #about-body p:first-child {
+    font-weight: 700;
+    color: #2d3e62;
+  }
+  #about-body a {
+    color: #1e88e5;
+    text-decoration: none;
+    font-weight: 700;
   }
 
   /* Lesson mode: blink/highlight animations */
@@ -427,33 +503,6 @@
   .lesson-btn:hover { background: rgba(255,255,255,0.3); }
   .lesson-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  @media (max-width: 1235px) {
-    #controls {
-      flex-direction: column;
-      align-items: flex-end;
-    }
-    #btn-menu {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      order: 1;
-    }
-    #menu-items {
-      order: 2;
-      flex-direction: column;
-      align-items: stretch;
-      overflow: hidden;
-      max-height: 0;
-      opacity: 0;
-      transition: max-height 0.35s ease, opacity 0.25s ease;
-      pointer-events: none;
-    }
-    #controls.open #menu-items {
-      max-height: 80vh;
-      opacity: 1;
-      pointer-events: auto;
-    }
-  }
 </style>
 </head>
 <body>
@@ -471,8 +520,17 @@
       <button class="btn" id="btn-colors">색상</button>
       <button class="btn" id="btn-now">지금 시간</button>
       <button class="btn" id="btn-play">자동 재생 ▶</button>
+      <button class="btn" id="btn-about">About</button>
     </div>
     <button class="btn" id="btn-menu" aria-label="Menu">☰</button>
+  </div>
+
+  <div id="about-overlay">
+    <div id="about-card">
+      <button id="about-close" aria-label="Close">✕</button>
+      <div id="about-title"></div>
+      <div id="about-body"></div>
+    </div>
   </div>
 
   <div id="main">
@@ -539,7 +597,10 @@
   let autoPlay = false;
   let autoPlayStart = 0;
   let autoPlayStartMinutes = 0;
-  let lang = "ko"; // "ko" or "en" — default Korean
+  let lang = (function() {
+    const nav = (navigator.language || navigator.userLanguage || "ko").toLowerCase();
+    return nav.startsWith("ko") ? "ko" : "en";
+  })();
   let colorsOn = false;
   let menuOpen = false;
 
@@ -559,6 +620,8 @@
     "#00838f"  // 11 - teal
   ];
 
+  const APP_VERSION = "261116.007";
+
   const I18N = {
     ko: {
       title: "우리 아이 시계 배우기",
@@ -568,6 +631,15 @@
       btnNow: "지금 시간",
       btnPlay: "자동 재생 ▶",
       btnStop: "자동 재생 ■",
+      btnAbout: "소개",
+      aboutTitle: "📱 우리 아이 시계 배우기",
+      aboutBody: [
+        "제가 이 프로그램을 만든 이유는 아이의 낮과 밤, 오전과 오후 및 시계 보는 방법을 알려주기 위함입니다.",
+        "문제가 있을 경우 연락 주세요.",
+        "이메일 : <a href=\"mailto:uskim850530@gmail.com\">uskim850530@gmail.com</a>",
+        "개발 : 김의수 with Claude Code",
+        "버전 : " + APP_VERSION
+      ],
       am: "오전",
       pm: "오후",
       hint: "긴 바늘(파란 바늘)을 잡고 돌려 보세요",
@@ -594,6 +666,15 @@
       btnNow: "Now",
       btnPlay: "Auto Play ▶",
       btnStop: "Auto Play ■",
+      btnAbout: "About",
+      aboutTitle: "📱 Kids Clock Learning",
+      aboutBody: [
+        "The reason I created this app is to teach my child about day and night, AM and PM, and how to read the clock.",
+        "If you have any issues, please contact me.",
+        "Email : <a href=\"mailto:uskim850530@gmail.com\">uskim850530@gmail.com</a>",
+        "Developed by : Kim Uisoo with Claude Code",
+        "Version : " + APP_VERSION
+      ],
       am: "a.m.",
       pm: "p.m.",
       hint: "Grab the long (blue) hand and drag it",
@@ -636,7 +717,12 @@
   const btnColors = document.getElementById("btn-colors");
   const btnNow = document.getElementById("btn-now");
   const btnMenu = document.getElementById("btn-menu");
+  const btnAbout = document.getElementById("btn-about");
   const controlsEl = document.getElementById("controls");
+  const aboutOverlay = document.getElementById("about-overlay");
+  const aboutClose = document.getElementById("about-close");
+  const aboutTitle = document.getElementById("about-title");
+  const aboutBody = document.getElementById("about-body");
 
   // Build ticks
   for (let i = 0; i < 60; i++) {
@@ -1035,10 +1121,29 @@
     document.title = I18N[lang].title;
     btnLang.textContent = I18N[lang].btnLangOther;
     btnNow.textContent = I18N[lang].btnNow;
+    btnAbout.textContent = I18N[lang].btnAbout;
     hintEl.textContent = I18N[lang].hint;
     updateAutoPlayButton();
     updateColorsButton();
   }
+
+  function openAbout() {
+    aboutTitle.textContent = I18N[lang].aboutTitle;
+    aboutBody.innerHTML = I18N[lang].aboutBody.map(function(p) { return "<p>" + p + "</p>"; }).join("");
+    aboutOverlay.classList.add("active");
+    controlsEl.classList.remove("open");
+    menuOpen = false;
+    btnMenu.textContent = "☰";
+  }
+  function closeAbout() {
+    aboutOverlay.classList.remove("active");
+  }
+
+  btnAbout.addEventListener("click", openAbout);
+  aboutClose.addEventListener("click", closeAbout);
+  aboutOverlay.addEventListener("click", function(e) {
+    if (e.target === aboutOverlay) closeAbout();
+  });
 
   btnLang.addEventListener("click", function() {
     lang = (lang === "ko") ? "en" : "ko";
@@ -1213,8 +1318,9 @@
       const nextLabel = hourLabel === 12 ? 1 : (hourLabel === 11 ? 12 : hourLabel + 1);
       const tm = (hourLabel === 12 ? 12 : hourLabel + 12) * 60;
       if (L === "ko") {
+        const particle = ([2, 4, 5, 9, 12].indexOf(hourLabel) !== -1) ? "와" : "과";
         lessons.hours.push({
-          say: "짧은 바늘이 숫자 " + hourLabel + "과 " + nextLabel + " 사이에 있을 때는 " + hourLabel + "시라고 말해요.",
+          say: "짧은 바늘이 숫자 " + hourLabel + particle + " " + nextLabel + " 사이에 있을 때는 " + hourLabel + "시라고 말해요.",
           highlight: ["hour-hand", "sector-" + hourLabel, "num-" + hourLabel, "num-" + nextLabel],
           setTime: tm
         });
@@ -1263,9 +1369,9 @@
     }
     if (L === "ko") {
       lessons.minutes.push({
-        say: "긴 바늘이 숫자 12에 있을 때는, 짧은 바늘의 숫자만 말해서 12시라고 말해요.",
+        say: "긴 바늘이 숫자 12에 있을 때는, 짧은 바늘의 숫자만 말해서 1시라고 말해요.",
         highlight: ["minute-hand", "num-12"],
-        setTime: 12 * 60
+        setTime: 13 * 60
       });
       lessons.minutes.push({
         say: "그리고 숫자 사이사이에는 작은 점들이 4개씩 있어요.",
@@ -1277,17 +1383,42 @@
         highlight: ["tick-1", "minute-hand"],
         setTime: 12 * 60 + 1
       });
+      lessons.minutes.push({ say: "그렇게", wait: 150 });
       lessons.minutes.push({
-        say: "그렇게 1분, 2분, 3분, 4분 수를 세다 보면, 숫자 1이 5분이 되는 거예요.",
-        highlight: ["num-1"],
+        say: "1분,",
+        highlight: ["minute-hand", "tick-1"],
+        setTime: 12 * 60 + 1,
+        wait: 100
+      });
+      lessons.minutes.push({
+        say: "2분,",
+        highlight: ["minute-hand", "tick-2"],
+        setTime: 12 * 60 + 2,
+        wait: 100
+      });
+      lessons.minutes.push({
+        say: "3분,",
+        highlight: ["minute-hand", "tick-3"],
+        setTime: 12 * 60 + 3,
+        wait: 100
+      });
+      lessons.minutes.push({
+        say: "4분,",
+        highlight: ["minute-hand", "tick-4"],
+        setTime: 12 * 60 + 4,
+        wait: 150
+      });
+      lessons.minutes.push({
+        say: "수를 세다 보면, 숫자 1이 5분이 되는 거예요.",
+        highlight: ["minute-hand", "num-1"],
         setTime: 12 * 60 + 5
       });
       lessons.minutes.push({ say: "그럼 1분부터 59분까지 함께 세어 볼까요?" });
     } else {
       lessons.minutes.push({
-        say: "When the long hand points to 12, we only say the hour, so we say 12 o'clock.",
+        say: "When the long hand points to 12, we only say the hour, so we say 1 o'clock.",
         highlight: ["minute-hand", "num-12"],
-        setTime: 12 * 60
+        setTime: 13 * 60
       });
       lessons.minutes.push({
         say: "Between each number, there are four small dots.",
@@ -1354,17 +1485,29 @@
         setTime: 2 * 60
       });
     }
+    const dotKoMap = {
+      6: "숫자 1 바로 다음 점",
+      7: "숫자 1 다음 두 번째 점",
+      8: "숫자 1 다음 세 번째 점",
+      9: "숫자 2 바로 전 점"
+    };
+    const dotEnMap = {
+      6: "the first dot after 1",
+      7: "the second dot after 1",
+      8: "the third dot after 1",
+      9: "the dot right before 2"
+    };
     for (let m = 6; m <= 9; m++) {
       const tm = 2 * 60 + m;
       if (L === "ko") {
         lessons.combined.push({
-          say: "짧은 바늘이 숫자 2와 3 사이에 있고, 긴 바늘이 숫자 1 다음 점을 가리키면 2시 " + m + "분이에요.",
+          say: "짧은 바늘이 숫자 2와 3 사이에 있고, 긴 바늘이 " + dotKoMap[m] + "을 가리키면 2시 " + m + "분이에요.",
           highlight: ["hour-hand", "minute-hand", "tick-" + m, "sector-2"],
           setTime: tm
         });
       } else {
         lessons.combined.push({
-          say: "When the short hand is between 2 and 3, and the long hand is on a dot after 1, it is 2 " + m + ".",
+          say: "When the short hand is between 2 and 3, and the long hand points to " + dotEnMap[m] + ", it is 2 " + m + ".",
           highlight: ["hour-hand", "minute-hand", "tick-" + m, "sector-2"],
           setTime: tm
         });
@@ -1389,7 +1532,7 @@
       lessons.ampm = [
         { say: "하루는 24시간이라고 해요." },
         { say: "시계에는 숫자 12까지밖에 없는데 어떻게 24시간일까요?" },
-        { say: "짧은 바늘이 시계를 두 바퀴 돌면 그게 하루예요.", action: "rotateHour2", setTime: 12 * 60 },
+        { say: "짧은 바늘이 시계를 두 바퀴 돌면 그게 하루예요.", action: "rotateHour2", setTime: 0 },
         { say: "하루는 크게 오전과 오후가 있어요. 작게는 아침, 점심, 저녁, 밤이라고 불러요." },
         { say: "우리 모두 아침에 일어나서 하루를 시작하죠? 해님이 떠오른 그 시간을 우리는 아침이라고 불러요.", setTime: 7 * 60 },
         { say: "해님이 하늘 가장 높은 곳에 올라오면 점심시간이에요.", setTime: 12 * 60 },
@@ -1397,7 +1540,7 @@
         { say: "달이 뜨고 어두워지면 밤이에요.", setTime: 22 * 60 },
         { say: "우리가 잠들고 나서, 밤 12시부터 점심 12시까지를 오전이라고 불러요.", setTime: 3 * 60 },
         { say: "그리고 점심 12시부터 밤 12시까지를 오후라고 불러요.", setTime: 15 * 60 },
-        { say: "이렇게 해서 하루는 24시간이에요. 같은 이름의 시간이 하루에 두 번씩 있어요. 아침 7시, 그리고 오후 7시.", setTime: 7 * 60 },
+        { say: "이렇게 해서 하루는 24시간이에요. 같은 이름의 시간이 하루에 두 번씩 있어요. 오전 7시, 그리고 오후 7시.", setTime: 7 * 60 },
         { say: "오후 7시는 이렇게 생겼어요.", setTime: 19 * 60 },
         { say: "시간의 이름을 더 세부적으로 나눌 수도 있어요. 하지만 우리는 아직 그 시간을 배우지는 않아요." }
       ];
@@ -1645,25 +1788,28 @@
   }
 
   function animateHourRotation2(onDone) {
-    const startT = performance.now();
-    const duration = 4000;
     const startM = totalMinutes;
     activeAction = "rotate";
-    function frame(now) {
+    pendingTimeout = setTimeout(function() {
       if (!lessonPlaying || activeAction !== "rotate") return;
-      const t = Math.min(1, (now - startT) / duration);
-      totalMinutes = startM + t * 1440;
-      update();
-      if (t < 1) {
-        requestAnimationFrame(frame);
-      } else {
-        totalMinutes = startM;
+      const startT = performance.now();
+      const duration = 4000;
+      function frame(now) {
+        if (!lessonPlaying || activeAction !== "rotate") return;
+        const t = Math.min(1, (now - startT) / duration);
+        totalMinutes = startM + t * 1440;
         update();
-        activeAction = null;
-        onDone();
+        if (t < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          totalMinutes = startM;
+          update();
+          activeAction = null;
+          onDone();
+        }
       }
-    }
-    requestAnimationFrame(frame);
+      requestAnimationFrame(frame);
+    }, 1000);
   }
 
   function runStep() {
